@@ -1,0 +1,196 @@
+package com.eteks.plugins;
+
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+
+import com.eteks.sweethome3d.model.Wall;
+import com.eteks.sweethome3d.plugin.Plugin;
+import com.eteks.sweethome3d.plugin.PluginAction;
+
+public class WallsPlugin extends Plugin {
+	
+	private void drawRoom(float A, float B, float C1, float C2, String unit) {
+		final float THICKNESS = 0.1f;
+		final float HEIGHT = 1f;
+		switch(unit) {
+		case "mm":
+			A = A / 10;
+			B = B /10;
+			C1 = C1 / 10;
+			C2 = C2 / 10;
+			break;
+		case "metres":
+			A = A * 100;
+			B = B * 100;
+			C1 = C1 * 100;
+			C2 = C2 * 100;
+			break;
+		default:
+			break;
+		}
+		Wall wallA = new Wall(0,0, A, 0, THICKNESS, HEIGHT);
+		Wall wallB1 = new Wall(0,0,0,B,THICKNESS,HEIGHT);
+		Wall wallB2 = new Wall(A,0,A,B,THICKNESS,HEIGHT);
+		Wall wallC1 = new Wall(0,B,C1,B,THICKNESS,HEIGHT);
+		Wall wallC2 = new Wall(A-C2,B,A,B,THICKNESS,HEIGHT);
+		getHome().addWall(wallA);
+		getHome().addWall(wallB1);
+		getHome().addWall(wallB2);
+		getHome().addWall(wallC1);
+		getHome().addWall(wallC2);
+	}
+	
+	private void showWindowDialog() {
+		JDialog dialog = new JDialog();
+		JPanel fieldsPnl = new JPanel();
+		fieldsPnl.setLayout(new BoxLayout(fieldsPnl, BoxLayout.Y_AXIS));
+		dialog.setLayout(new BorderLayout());
+		dialog.setTitle("Create room");
+		final int TEXT_FIELD_SIZE = 15;
+
+		
+		JLabel titleLbl = new JLabel("Please enter the room dimensions");
+		JPanel titlePnl = new JPanel();
+		titlePnl.add(titleLbl);
+		dialog.add(titlePnl, BorderLayout.PAGE_START);
+		
+		JLabel labelA = new JLabel("A");
+		JTextField textFieldA = new JTextField(TEXT_FIELD_SIZE);
+		JPanel panelA = new JPanel();
+		panelA.add(labelA);
+		panelA.add(textFieldA);
+		fieldsPnl.add(panelA);
+		
+		JLabel labelB = new JLabel("B");
+		JTextField textFieldB = new JTextField(TEXT_FIELD_SIZE);
+		JPanel panelB = new JPanel();
+		panelB.add(labelB);
+		panelB.add(textFieldB);
+		fieldsPnl.add(panelB);
+		
+		JLabel labelC1 = new JLabel("C1");
+		JTextField textFieldC1 = new JTextField(TEXT_FIELD_SIZE);
+		JPanel panelC1 = new JPanel();
+		panelC1.add(labelC1);
+		panelC1.add(textFieldC1);
+		fieldsPnl.add(panelC1);
+		
+		JLabel labelC2 = new JLabel("C2");
+		JTextField textFieldC2 = new JTextField(TEXT_FIELD_SIZE);
+		JPanel panelC2 = new JPanel();
+		panelC2.add(labelC2);
+		panelC2.add(textFieldC2);
+		fieldsPnl.add(panelC2);
+		
+		/*
+		JLabel labelTitle = new JLabel("Title");
+		JTextField textFieldTitle = new JTextField(TEXT_FIELD_SIZE);
+		JPanel panelTitle = new JPanel();
+		panelTitle.add(labelTitle);
+		panelTitle.add(textFieldTitle);
+		fieldsPnl.add(panelTitle);
+		
+		JLabel labelFootnote = new JLabel("Footnote");
+		JTextField textFieldFootnote = new JTextField(TEXT_FIELD_SIZE);
+		JPanel panelFootnote = new JPanel();
+		panelFootnote.add(labelFootnote);
+		panelFootnote.add(textFieldFootnote);
+		fieldsPnl.add(panelFootnote);
+		
+		JLabel labelFloatingtext = new JLabel("Floating text");
+		JTextField textFieldFloatingtext = new JTextField(TEXT_FIELD_SIZE);
+		JPanel panelFloatingtext = new JPanel();
+		panelFloatingtext.add(labelFloatingtext);
+		panelFloatingtext.add(textFieldFloatingtext);
+		fieldsPnl.add(panelFloatingtext);
+		*/
+		
+		JPanel unitsPnl = new JPanel();
+		unitsPnl.setLayout(new BoxLayout(unitsPnl, BoxLayout.Y_AXIS));
+		JLabel unitsLbl = new JLabel("Dimension unit");
+		JRadioButton mmOpt = new JRadioButton("mm");
+		JRadioButton cmOpt = new JRadioButton("cm");
+		JRadioButton metresOpt = new JRadioButton("Metres");
+		ButtonGroup group = new ButtonGroup();
+		cmOpt.setSelected(true);
+		mmOpt.setActionCommand("mm");
+		cmOpt.setActionCommand("cm");
+		metresOpt.setActionCommand("metres");
+		group.add(mmOpt);
+		group.add(cmOpt);
+		group.add(metresOpt);
+		unitsPnl.add(unitsLbl);
+		unitsPnl.add(mmOpt);
+		unitsPnl.add(cmOpt);
+		unitsPnl.add(metresOpt);
+		unitsPnl.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+		
+		JButton createRoomBtn = new JButton("Create room");
+		createRoomBtn.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+				float A = Float.parseFloat(textFieldA.getText());
+				float B = Float.parseFloat(textFieldB.getText());
+				float C1 = Float.parseFloat(textFieldC1.getText());
+				float C2 = Float.parseFloat(textFieldC2.getText());
+				JOptionPane.showMessageDialog(null, "Unit", group.getSelection().getActionCommand(),JOptionPane.INFORMATION_MESSAGE);
+				drawRoom(A, B, C1, C2, group.getSelection().getActionCommand());
+				dialog.dispose();
+				} catch (NumberFormatException ex) {
+					JOptionPane.showMessageDialog(null, ex.getMessage(), 
+							"Please insert only numbers", JOptionPane.ERROR_MESSAGE);
+				}
+				
+				
+				
+			}
+		});
+		JPanel createRoomPanelBtn = new JPanel();
+		createRoomPanelBtn.add(createRoomBtn);
+		fieldsPnl.add(createRoomPanelBtn);
+		dialog.add(fieldsPnl, BorderLayout.LINE_START);
+		dialog.add(unitsPnl, BorderLayout.LINE_END);
+		dialog.setSize(350,400);
+		dialog.setLocationRelativeTo(null);
+		dialog.setResizable(false);
+		dialog.setModal(true);
+		dialog.pack();
+		dialog.setVisible(true);
+	}
+	
+	public class WallsAction extends PluginAction {
+
+		public WallsAction () {
+			putPropertyValue(Property.NAME, "Create Room");
+			putPropertyValue(Property.MENU, "Tools");
+			setEnabled(true);
+		}
+		
+		@Override
+		public void execute() {		
+			showWindowDialog();
+		}
+
+	}
+
+	@Override
+	public PluginAction[] getActions() {
+		// TODO Auto-generated method stub
+		return new PluginAction [] {new WallsAction()};
+	}
+
+}
