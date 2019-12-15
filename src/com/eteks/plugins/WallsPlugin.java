@@ -15,15 +15,20 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
+import com.eteks.sweethome3d.model.Label;
+import com.eteks.sweethome3d.model.TextStyle;
 import com.eteks.sweethome3d.model.Wall;
 import com.eteks.sweethome3d.plugin.Plugin;
 import com.eteks.sweethome3d.plugin.PluginAction;
 
 public class WallsPlugin extends Plugin {
-	
-	private void drawRoom(float A, float B, float C1, float C2, String unit) {
+
+	protected void drawRoom(float A, float B, float C1, float C2, String unit, String title, String footnote, String floatingtext) {
 		final float THICKNESS = 0.1f;
 		final float HEIGHT = 1f;
+		final float FONT_SIZE_FACTOR_TITLE = 0.06f;
+		final float FONT_SIZE_FACTOR_FOOTNOTE = 0.05f;
+		final float FONT_SIZE_FACTOR_FLOATING = 0.05f;
 		switch(unit) {
 		case "mm":
 			A = A / 10;
@@ -45,17 +50,30 @@ public class WallsPlugin extends Plugin {
 		Wall wallB2 = new Wall(A,0,A,B,THICKNESS,HEIGHT);
 		Wall wallC1 = new Wall(0,B,C1,B,THICKNESS,HEIGHT);
 		Wall wallC2 = new Wall(A-C2,B,A,B,THICKNESS,HEIGHT);
+		Label titleLabel = new Label(title, A/2, -B/60);
+		Label footnoteLabel = new Label(footnote, A/2, B/2);
+		Label floatingtextLabel = new Label(floatingtext, A/2, B + B / 60 + A * FONT_SIZE_FACTOR_FLOATING);
+		TextStyle styleTitle = new TextStyle(A * FONT_SIZE_FACTOR_TITLE);
+		TextStyle styleFootnote = new TextStyle(A * FONT_SIZE_FACTOR_FOOTNOTE);
+		TextStyle styleFloating = new TextStyle(A * FONT_SIZE_FACTOR_FLOATING);
+		titleLabel.setStyle(styleTitle);
+		footnoteLabel.setStyle(styleFootnote);
+		floatingtextLabel.setStyle(styleFloating);
 		getHome().addWall(wallA);
 		getHome().addWall(wallB1);
 		getHome().addWall(wallB2);
 		getHome().addWall(wallC1);
 		getHome().addWall(wallC2);
+		getHome().addLabel(titleLabel);
+		getHome().addLabel(footnoteLabel);
+		getHome().addLabel(floatingtextLabel);
 	}
 	
-	private void showWindowDialog() {
+	protected void showWindowDialog() {
 		JDialog dialog = new JDialog();
 		JPanel fieldsPnl = new JPanel();
 		fieldsPnl.setLayout(new BoxLayout(fieldsPnl, BoxLayout.Y_AXIS));
+		fieldsPnl.setBorder(BorderFactory.createEmptyBorder(10,10,10,5));
 		dialog.setLayout(new BorderLayout());
 		dialog.setTitle("Create room");
 		final int TEXT_FIELD_SIZE = 15;
@@ -63,10 +81,11 @@ public class WallsPlugin extends Plugin {
 		
 		JLabel titleLbl = new JLabel("Please enter the room dimensions");
 		JPanel titlePnl = new JPanel();
+		titlePnl.setBorder(BorderFactory.createEmptyBorder(10,10,0,10));
 		titlePnl.add(titleLbl);
 		dialog.add(titlePnl, BorderLayout.PAGE_START);
 		
-		JLabel labelA = new JLabel("A");
+		JLabel labelA = new JLabel("A", JLabel.LEFT);
 		JTextField textFieldA = new JTextField(TEXT_FIELD_SIZE);
 		JPanel panelA = new JPanel();
 		panelA.add(labelA);
@@ -94,7 +113,6 @@ public class WallsPlugin extends Plugin {
 		panelC2.add(textFieldC2);
 		fieldsPnl.add(panelC2);
 		
-		/*
 		JLabel labelTitle = new JLabel("Title");
 		JTextField textFieldTitle = new JTextField(TEXT_FIELD_SIZE);
 		JPanel panelTitle = new JPanel();
@@ -115,7 +133,6 @@ public class WallsPlugin extends Plugin {
 		panelFloatingtext.add(labelFloatingtext);
 		panelFloatingtext.add(textFieldFloatingtext);
 		fieldsPnl.add(panelFloatingtext);
-		*/
 		
 		JPanel unitsPnl = new JPanel();
 		unitsPnl.setLayout(new BoxLayout(unitsPnl, BoxLayout.Y_AXIS));
@@ -135,7 +152,7 @@ public class WallsPlugin extends Plugin {
 		unitsPnl.add(mmOpt);
 		unitsPnl.add(cmOpt);
 		unitsPnl.add(metresOpt);
-		unitsPnl.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+		unitsPnl.setBorder(BorderFactory.createEmptyBorder(10,5,10,10));
 		
 		JButton createRoomBtn = new JButton("Create room");
 		createRoomBtn.addActionListener(new ActionListener() {
@@ -143,13 +160,16 @@ public class WallsPlugin extends Plugin {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-				float A = Float.parseFloat(textFieldA.getText());
-				float B = Float.parseFloat(textFieldB.getText());
-				float C1 = Float.parseFloat(textFieldC1.getText());
-				float C2 = Float.parseFloat(textFieldC2.getText());
-				JOptionPane.showMessageDialog(null, "Unit", group.getSelection().getActionCommand(),JOptionPane.INFORMATION_MESSAGE);
-				drawRoom(A, B, C1, C2, group.getSelection().getActionCommand());
-				dialog.dispose();
+					float A = Float.parseFloat(textFieldA.getText());
+					float B = Float.parseFloat(textFieldB.getText());
+					float C1 = Float.parseFloat(textFieldC1.getText());
+					float C2 = Float.parseFloat(textFieldC2.getText());
+					String title = textFieldTitle.getText();
+					String footnote = textFieldFootnote.getText();
+					String floatingtext = textFieldFloatingtext.getText();
+					String option = group.getSelection().getActionCommand();
+					drawRoom(A, B, C1, C2, option, title, footnote, floatingtext);
+					dialog.dispose();
 				} catch (NumberFormatException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage(), 
 							"Please insert only numbers", JOptionPane.ERROR_MESSAGE);
@@ -171,7 +191,7 @@ public class WallsPlugin extends Plugin {
 		dialog.pack();
 		dialog.setVisible(true);
 	}
-	
+
 	public class WallsAction extends PluginAction {
 
 		public WallsAction () {
