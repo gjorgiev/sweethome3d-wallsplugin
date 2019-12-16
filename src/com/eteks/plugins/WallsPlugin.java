@@ -25,6 +25,7 @@ import com.eteks.sweethome3d.model.Wall;
 import com.eteks.sweethome3d.plugin.Plugin;
 import com.eteks.sweethome3d.plugin.PluginAction;
 
+
 public class WallsPlugin extends Plugin {
 
 	protected void drawRoom(float A, float B, float C1, float C2, String unit, String title, String footnote, String floatingtext, float floatingTextLines) {
@@ -37,6 +38,7 @@ public class WallsPlugin extends Plugin {
 		final float TITLE_DISTANCE_CONST = 3.5f;
 		final float FLOATING_TEXT_DISTANCE_CONST = 4f;
 		final float DIMENSION_DISTANCE_CONST = 1.5f;
+		
 		switch(unit) {
 		case "mm":
 			A = A / 10;
@@ -53,11 +55,13 @@ public class WallsPlugin extends Plugin {
 		default:
 			break;
 		}
+		
 		Wall wallA = new Wall(0,0, A, 0, THICKNESS, HEIGHT);
 		Wall wallB1 = new Wall(0,0,0,B,THICKNESS,HEIGHT);
 		Wall wallB2 = new Wall(A,0,A,B,THICKNESS,HEIGHT);
 		Wall wallC1 = new Wall(0,B,C1,B,THICKNESS,HEIGHT);
 		Wall wallC2 = new Wall(A-C2,B,A,B,THICKNESS,HEIGHT);
+		
 		final float fontSizeDimension = A * FONT_SIZE_FACTOR_DIMENSION;
 		final float dimensionOffset = DIMENSION_DISTANCE_CONST*fontSizeDimension;
 		DimensionLine dimensionA = new DimensionLine(0,0,A,0,-dimensionOffset);
@@ -65,12 +69,14 @@ public class WallsPlugin extends Plugin {
 		DimensionLine dimensionB2 = new DimensionLine(A,0,A,B,-dimensionOffset);
 		DimensionLine dimensionC1 = new DimensionLine(0,B,C1,B,dimensionOffset);
 		DimensionLine dimensionC2 = new DimensionLine(A-C2,B,A,B,dimensionOffset);
+		
 		TextStyle styleDimension = new TextStyle(fontSizeDimension);
 		dimensionA.setLengthStyle(styleDimension);
 		dimensionB1.setLengthStyle(styleDimension);
 		dimensionB2.setLengthStyle(styleDimension);
 		dimensionC1.setLengthStyle(styleDimension);
 		dimensionC2.setLengthStyle(styleDimension);
+		
 		final float titleFontSize = A * FONT_SIZE_FACTOR_TITLE;
 		final float footnoteFontSize = A * FONT_SIZE_FACTOR_FOOTNOTE;
 		final float floatingTextFontSize = A * FONT_SIZE_FACTOR_FLOATING;
@@ -86,16 +92,19 @@ public class WallsPlugin extends Plugin {
 		titleLabel.setStyle(styleTitle);
 		footnoteLabel.setStyle(styleFootnote);
 		floatingtextLabel.setStyle(styleFloating);
+		
 		getHome().addWall(wallA);
 		getHome().addWall(wallB1);
 		getHome().addWall(wallB2);
 		getHome().addWall(wallC1);
 		getHome().addWall(wallC2);
+		
 		getHome().addDimensionLine(dimensionA);
 		getHome().addDimensionLine(dimensionB1);
 		getHome().addDimensionLine(dimensionB2);
 		getHome().addDimensionLine(dimensionC1);
 		getHome().addDimensionLine(dimensionC2);
+		
 		getHome().addLabel(titleLabel);
 		getHome().addLabel(footnoteLabel);
 		getHome().addLabel(floatingtextLabel);
@@ -233,8 +242,6 @@ public class WallsPlugin extends Plugin {
 							"Please insert only numbers", JOptionPane.ERROR_MESSAGE);
 				}
 				
-				
-				
 			}
 		});
 		
@@ -242,6 +249,7 @@ public class WallsPlugin extends Plugin {
 		buttonPnl.setBorder(BorderFactory.createEmptyBorder(5,0,10,0));
 		buttonPnl.add(createRoomBtn);
 		fieldsPnl.add(buttonPnl);
+
 		dialog.add(fieldsPnl, BorderLayout.LINE_START);
 		dialog.add(unitsPnl, BorderLayout.LINE_END);
 		dialog.setSize(350,400);
@@ -249,6 +257,7 @@ public class WallsPlugin extends Plugin {
 		dialog.setResizable(false);
 		dialog.setModal(true);
 		dialog.pack();
+		dialog.getRootPane().setDefaultButton(createRoomBtn);
 		dialog.setVisible(true);
 	}
 
