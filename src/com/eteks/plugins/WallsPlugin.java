@@ -32,8 +32,7 @@ public class WallsPlugin extends Plugin {
 		final float FONT_SIZE_FACTOR_FLOATING = 0.05f;
 		final float FONT_SIZE_FACTOR_DIMENSION = 0.05f;
 		final float TITLE_DISTANCE_CONST = 3.5f;
-		final float FLOATING_TEXT_DISTANCE_CONST = 4f;
-		final float FOOTNOTE_DISTANCE_CONST = 0.02f;
+		final float FLOATING_TEXT_DISTANCE_CONST = 5f;
 		final float DIMENSION_DISTANCE_CONST = 1.5f;
 		switch(unit) {
 		case "mm":
@@ -73,7 +72,7 @@ public class WallsPlugin extends Plugin {
 		final float footnoteFontSize = A * FONT_SIZE_FACTOR_FOOTNOTE;
 		final float floatingTextFontSize = A * FONT_SIZE_FACTOR_FLOATING;
 		final float titleDistanceY = titleFontSize * TITLE_DISTANCE_CONST;
-		final float footnoteDistanceY = B/2 - B * FOOTNOTE_DISTANCE_CONST;
+		final float footnoteDistanceY = B/2;
 		final float floatingTextDistanceY = B + floatingTextFontSize * FLOATING_TEXT_DISTANCE_CONST;
 		Label titleLabel = new Label(title, A/2, -titleDistanceY);
 		Label footnoteLabel = new Label(footnote, A/2, footnoteDistanceY);
@@ -103,78 +102,102 @@ public class WallsPlugin extends Plugin {
 		JDialog dialog = new JDialog();
 		JPanel fieldsPnl = new JPanel();
 		fieldsPnl.setLayout(new BoxLayout(fieldsPnl, BoxLayout.Y_AXIS));
-		fieldsPnl.setBorder(BorderFactory.createEmptyBorder(10,10,10,5));
+		fieldsPnl.setBorder(BorderFactory.createEmptyBorder(10,10,0,10));
 		dialog.setLayout(new BorderLayout());
 		dialog.setTitle("Create room");
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		final int TEXT_FIELD_SIZE = 15;
 
 		
 		JLabel titleLbl = new JLabel("Please enter the room dimensions");
-		JPanel titlePnl = new JPanel();
-		titlePnl.setBorder(BorderFactory.createEmptyBorder(10,10,0,10));
-		titlePnl.add(titleLbl);
-		dialog.add(titlePnl, BorderLayout.PAGE_START);
+		titleLbl.setBorder(BorderFactory.createEmptyBorder(10,10,0,10));
+		dialog.add(titleLbl, BorderLayout.PAGE_START);
 		
 		JLabel labelA = new JLabel("A", JLabel.LEFT);
+		labelA.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
 		JTextField textFieldA = new JTextField(TEXT_FIELD_SIZE);
 		JPanel panelA = new JPanel();
-		panelA.add(labelA);
-		panelA.add(textFieldA);
+		panelA.setLayout(new BorderLayout());
+		panelA.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
+		panelA.add(labelA, BorderLayout.LINE_START);
+		panelA.add(textFieldA, BorderLayout.LINE_END);
 		fieldsPnl.add(panelA);
 		
 		JLabel labelB = new JLabel("B");
+		labelB.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
 		JTextField textFieldB = new JTextField(TEXT_FIELD_SIZE);
 		JPanel panelB = new JPanel();
-		panelB.add(labelB);
-		panelB.add(textFieldB);
+		panelB.setLayout(new BorderLayout());
+		panelB.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
+		panelB.add(labelB, BorderLayout.LINE_START);
+		panelB.add(textFieldB, BorderLayout.LINE_END);
 		fieldsPnl.add(panelB);
 		
 		JLabel labelC1 = new JLabel("C1");
+		labelC1.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
 		JTextField textFieldC1 = new JTextField(TEXT_FIELD_SIZE);
 		JPanel panelC1 = new JPanel();
-		panelC1.add(labelC1);
-		panelC1.add(textFieldC1);
+		panelC1.setLayout(new BorderLayout());
+		panelC1.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
+		panelC1.add(labelC1, BorderLayout.LINE_START);
+		panelC1.add(textFieldC1, BorderLayout.LINE_END);
 		fieldsPnl.add(panelC1);
 		
 		JLabel labelC2 = new JLabel("C2");
+		labelC2.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
 		JTextField textFieldC2 = new JTextField(TEXT_FIELD_SIZE);
 		JPanel panelC2 = new JPanel();
-		panelC2.add(labelC2);
-		panelC2.add(textFieldC2);
+		panelC2.setLayout(new BorderLayout());
+		panelC2.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
+		panelC2.add(labelC2, BorderLayout.LINE_START);
+		panelC2.add(textFieldC2, BorderLayout.LINE_END);
 		fieldsPnl.add(panelC2);
 		
 		JLabel labelTitle = new JLabel("Title");
+		labelTitle.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
 		JTextField textFieldTitle = new JTextField(TEXT_FIELD_SIZE);
-		JPanel panelTitle = new JPanel();
-		panelTitle.add(labelTitle);
-		panelTitle.add(textFieldTitle);
-		fieldsPnl.add(panelTitle);
+		JPanel titlePnl = new JPanel();
+		titlePnl.setLayout(new BorderLayout());
+		titlePnl.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
+		titlePnl.add(labelTitle, BorderLayout.LINE_START);
+		titlePnl.add(textFieldTitle, BorderLayout.LINE_END);
+		fieldsPnl.add(titlePnl);
 		
 		JLabel labelFootnote = new JLabel("Footnote");
+		labelFootnote.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
 		JTextField textFieldFootnote = new JTextField(TEXT_FIELD_SIZE);
-		JPanel panelFootnote = new JPanel();
-		panelFootnote.add(labelFootnote);
-		panelFootnote.add(textFieldFootnote);
-		fieldsPnl.add(panelFootnote);
+		JPanel footnotePnl = new JPanel();
+		footnotePnl.setLayout(new BorderLayout());
+		footnotePnl.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
+		footnotePnl.add(labelFootnote, BorderLayout.LINE_START);
+		footnotePnl.add(textFieldFootnote, BorderLayout.LINE_END);
+		fieldsPnl.add(footnotePnl);
 		
 		JLabel labelFloatingtext = new JLabel("Floating text");
+		labelFloatingtext.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
 		JTextField textFieldFloatingtext = new JTextField(TEXT_FIELD_SIZE);
-		JPanel panelFloatingtext = new JPanel();
-		panelFloatingtext.add(labelFloatingtext);
-		panelFloatingtext.add(textFieldFloatingtext);
-		fieldsPnl.add(panelFloatingtext);
+		JPanel floatingTextPnl = new JPanel();
+		floatingTextPnl.setLayout(new BorderLayout());
+		floatingTextPnl.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
+		floatingTextPnl.add(labelFloatingtext, BorderLayout.LINE_START);
+		floatingTextPnl.add(textFieldFloatingtext, BorderLayout.LINE_END);
+		fieldsPnl.add(floatingTextPnl);
 		
 		JPanel unitsPnl = new JPanel();
 		unitsPnl.setLayout(new BoxLayout(unitsPnl, BoxLayout.Y_AXIS));
-		JLabel unitsLbl = new JLabel("Dimension unit");
+		unitsPnl.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+		JLabel unitsLbl = new JLabel("Dimension Unit");
 		JRadioButton mmOpt = new JRadioButton("mm");
 		JRadioButton cmOpt = new JRadioButton("cm");
 		JRadioButton metresOpt = new JRadioButton("Metres");
 		ButtonGroup group = new ButtonGroup();
 		cmOpt.setSelected(true);
 		mmOpt.setActionCommand("mm");
+		mmOpt.setBorder(BorderFactory.createEmptyBorder(10,0,5,0));
 		cmOpt.setActionCommand("cm");
+		cmOpt.setBorder(BorderFactory.createEmptyBorder(5,0,5,0));
 		metresOpt.setActionCommand("metres");
+		metresOpt.setBorder(BorderFactory.createEmptyBorder(5,0,5,0));
 		group.add(mmOpt);
 		group.add(cmOpt);
 		group.add(metresOpt);
@@ -182,7 +205,6 @@ public class WallsPlugin extends Plugin {
 		unitsPnl.add(mmOpt);
 		unitsPnl.add(cmOpt);
 		unitsPnl.add(metresOpt);
-		unitsPnl.setBorder(BorderFactory.createEmptyBorder(10,5,10,10));
 		
 		JButton createRoomBtn = new JButton("Create room");
 		createRoomBtn.addActionListener(new ActionListener() {
@@ -209,9 +231,11 @@ public class WallsPlugin extends Plugin {
 				
 			}
 		});
-		JPanel createRoomPanelBtn = new JPanel();
-		createRoomPanelBtn.add(createRoomBtn);
-		fieldsPnl.add(createRoomPanelBtn);
+		
+		JPanel buttonPnl = new JPanel(new BorderLayout());
+		buttonPnl.setBorder(BorderFactory.createEmptyBorder(5,0,10,0));
+		buttonPnl.add(createRoomBtn);
+		fieldsPnl.add(buttonPnl);
 		dialog.add(fieldsPnl, BorderLayout.LINE_START);
 		dialog.add(unitsPnl, BorderLayout.LINE_END);
 		dialog.setSize(350,400);
