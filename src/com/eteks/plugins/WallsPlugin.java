@@ -13,7 +13,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 
 import com.eteks.sweethome3d.model.DimensionLine;
 import com.eteks.sweethome3d.model.Label;
@@ -24,7 +27,7 @@ import com.eteks.sweethome3d.plugin.PluginAction;
 
 public class WallsPlugin extends Plugin {
 
-	protected void drawRoom(float A, float B, float C1, float C2, String unit, String title, String footnote, String floatingtext) {
+	protected void drawRoom(float A, float B, float C1, float C2, String unit, String title, String footnote, String floatingtext, float floatingTextLines) {
 		final float THICKNESS = 0.1f;
 		final float HEIGHT = 1f;
 		final float FONT_SIZE_FACTOR_TITLE = 0.06f;
@@ -32,7 +35,7 @@ public class WallsPlugin extends Plugin {
 		final float FONT_SIZE_FACTOR_FLOATING = 0.05f;
 		final float FONT_SIZE_FACTOR_DIMENSION = 0.05f;
 		final float TITLE_DISTANCE_CONST = 3.5f;
-		final float FLOATING_TEXT_DISTANCE_CONST = 5f;
+		final float FLOATING_TEXT_DISTANCE_CONST = 4f;
 		final float DIMENSION_DISTANCE_CONST = 1.5f;
 		switch(unit) {
 		case "mm":
@@ -73,7 +76,7 @@ public class WallsPlugin extends Plugin {
 		final float floatingTextFontSize = A * FONT_SIZE_FACTOR_FLOATING;
 		final float titleDistanceY = titleFontSize * TITLE_DISTANCE_CONST;
 		final float footnoteDistanceY = B/2;
-		final float floatingTextDistanceY = B + floatingTextFontSize * FLOATING_TEXT_DISTANCE_CONST;
+		final float floatingTextDistanceY = B + floatingTextFontSize * (FLOATING_TEXT_DISTANCE_CONST + floatingTextLines);
 		Label titleLabel = new Label(title, A/2, -titleDistanceY);
 		Label footnoteLabel = new Label(footnote, A/2, footnoteDistanceY);
 		Label floatingtextLabel = new Label(floatingtext, A/2, floatingTextDistanceY);
@@ -175,12 +178,14 @@ public class WallsPlugin extends Plugin {
 		
 		JLabel labelFloatingtext = new JLabel("Floating text");
 		labelFloatingtext.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
-		JTextField textFieldFloatingtext = new JTextField(TEXT_FIELD_SIZE);
+		JTextArea floatingTextArea = new JTextArea(2, TEXT_FIELD_SIZE);
+		floatingTextArea.setFont(UIManager.getFont("TextField.font"));
+		JScrollPane scrollPane = new JScrollPane(floatingTextArea);
 		JPanel floatingTextPnl = new JPanel();
 		floatingTextPnl.setLayout(new BorderLayout());
 		floatingTextPnl.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
 		floatingTextPnl.add(labelFloatingtext, BorderLayout.LINE_START);
-		floatingTextPnl.add(textFieldFloatingtext, BorderLayout.LINE_END);
+		floatingTextPnl.add(scrollPane, BorderLayout.LINE_END);
 		fieldsPnl.add(floatingTextPnl);
 		
 		JPanel unitsPnl = new JPanel();
@@ -218,9 +223,10 @@ public class WallsPlugin extends Plugin {
 					float C2 = Float.parseFloat(textFieldC2.getText());
 					String title = textFieldTitle.getText();
 					String footnote = textFieldFootnote.getText();
-					String floatingtext = textFieldFloatingtext.getText();
+					String floatingtext = floatingTextArea.getText();
 					String option = group.getSelection().getActionCommand();
-					drawRoom(A, B, C1, C2, option, title, footnote, floatingtext);
+					float floatingTextLines = floatingTextArea.getLineCount();
+					drawRoom(A, B, C1, C2, option, title, footnote, floatingtext, floatingTextLines);
 					dialog.dispose();
 				} catch (NumberFormatException ex) {
 					JOptionPane.showMessageDialog(null, ex.getMessage(), 
