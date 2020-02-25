@@ -3,6 +3,10 @@ package com.eteks.plugins;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -19,42 +23,43 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 
 import com.eteks.sweethome3d.model.DimensionLine;
+import com.eteks.sweethome3d.model.HomePieceOfFurniture;
 import com.eteks.sweethome3d.model.Label;
+import com.eteks.sweethome3d.model.PieceOfFurniture;
 import com.eteks.sweethome3d.model.TextStyle;
 import com.eteks.sweethome3d.model.Wall;
 import com.eteks.sweethome3d.plugin.Plugin;
 import com.eteks.sweethome3d.plugin.PluginAction;
+import com.sun.org.apache.xml.internal.serialize.LineSeparator;
 
 
 public class WallsPlugin extends Plugin {
-
-	protected void drawRoom(float A, float B, float C1, float C2, String unit, String title, String footnote, String floatingtext, float floatingTextLines) {
-		final float THICKNESS = 0.1f;
-		final float HEIGHT = 1f;
-		final float FONT_SIZE_FACTOR_TITLE = 0.06f;
-		final float FONT_SIZE_FACTOR_FOOTNOTE = 0.05f;
-		final float FONT_SIZE_FACTOR_FLOATING = 0.05f;
-		final float FONT_SIZE_FACTOR_DIMENSION = 0.05f;
-		final float TITLE_DISTANCE_CONST = 3.5f;
-		final float FLOATING_TEXT_DISTANCE_CONST = 4f;
-		final float DIMENSION_DISTANCE_CONST = 1.5f;
-		
+	
+	final float HEIGHT = 0.1f;
+	
+	private float normalize(float value, String unit)
+	{
 		switch(unit) {
 		case "mm":
-			A = A / 10;
-			B = B /10;
-			C1 = C1 / 10;
-			C2 = C2 / 10;
-			break;
+			return value / 10;
 		case "metres":
-			A = A * 100;
-			B = B * 100;
-			C1 = C1 * 100;
-			C2 = C2 * 100;
-			break;
+			return value * 100;
 		default:
-			break;
+			return value;
 		}
+	}
+
+	protected void drawRoom(float A, float B, float C1, float C2, String unit, String title, String footnote, String floatingtext, float footnoteTextLines) {
+		final float THICKNESS = 0.1f;
+		final float TITLE_DISTANCE_CONST = 3f;
+		final float FOOTNOTE_DISTANCE_CONST = 2f;
+		final float DIMENSION_DISTANCE_CONST = 1.5f;
+		
+		// Convert all values to centimeters
+		A = normalize(A, unit);
+		B = normalize(B, unit);
+		C1 = normalize(C1, unit);
+		C2 = normalize(C2, unit);
 		
 		Wall wallA = new Wall(0,0, A, 0, THICKNESS, HEIGHT);
 		Wall wallB1 = new Wall(0,0,0,B,THICKNESS,HEIGHT);
@@ -62,27 +67,28 @@ public class WallsPlugin extends Plugin {
 		Wall wallC1 = new Wall(0,B,C1,B,THICKNESS,HEIGHT);
 		Wall wallC2 = new Wall(A-C2,B,A,B,THICKNESS,HEIGHT);
 		
-		final float fontSizeDimension = A * FONT_SIZE_FACTOR_DIMENSION;
-		final float dimensionOffset = DIMENSION_DISTANCE_CONST*fontSizeDimension;
+		/*
+		Baseboard basebordA = new Baseboard(100, 100, 1, null);
+		wallA.setRightSideBaseboard(basebordA);
+		wallA.setRightSideBaseboard(basebordA);
+		wallA.setLeftSideBaseboard(basebordA);
+		*/
+		
+		final float dimensionOffset = DIMENSION_DISTANCE_CONST*A*0.05f;
 		DimensionLine dimensionA = new DimensionLine(0,0,A,0,-dimensionOffset);
 		DimensionLine dimensionB1 = new DimensionLine(0,0,0,B,dimensionOffset);
 		DimensionLine dimensionB2 = new DimensionLine(A,0,A,B,-dimensionOffset);
 		DimensionLine dimensionC1 = new DimensionLine(0,B,C1,B,dimensionOffset);
 		DimensionLine dimensionC2 = new DimensionLine(A-C2,B,A,B,dimensionOffset);
 		
-		TextStyle styleDimension = new TextStyle(fontSizeDimension);
-		dimensionA.setLengthStyle(styleDimension);
-		dimensionB1.setLengthStyle(styleDimension);
-		dimensionB2.setLengthStyle(styleDimension);
-		dimensionC1.setLengthStyle(styleDimension);
-		dimensionC2.setLengthStyle(styleDimension);
-		
-		final float titleFontSize = A * FONT_SIZE_FACTOR_TITLE;
-		final float footnoteFontSize = A * FONT_SIZE_FACTOR_FOOTNOTE;
-		final float floatingTextFontSize = A * FONT_SIZE_FACTOR_FLOATING;
+		final float titleFontSize = 18;
+		final float footnoteFontSize = 11;
+		final float floatingTextFontSize = 8;
 		final float titleDistanceY = titleFontSize * TITLE_DISTANCE_CONST;
-		final float footnoteDistanceY = B/2;
-		final float floatingTextDistanceY = B + floatingTextFontSize * (FLOATING_TEXT_DISTANCE_CONST + floatingTextLines);
+		float footnoteDistanceY = B + footnoteFontSize * (FOOTNOTE_DISTANCE_CONST + footnoteTextLines);
+		footnoteDistanceY += (C1 > 0 || C2 > 0 ? 1.5*dimensionOffset : 0);
+		final float floatingTextDistanceY = B/2;
+
 		Label titleLabel = new Label(title, A/2, -titleDistanceY);
 		Label footnoteLabel = new Label(footnote, A/2, footnoteDistanceY);
 		Label floatingtextLabel = new Label(floatingtext, A/2, floatingTextDistanceY);
@@ -102,12 +108,281 @@ public class WallsPlugin extends Plugin {
 		getHome().addDimensionLine(dimensionA);
 		getHome().addDimensionLine(dimensionB1);
 		getHome().addDimensionLine(dimensionB2);
-		getHome().addDimensionLine(dimensionC1);
-		getHome().addDimensionLine(dimensionC2);
+		if (C1 > 0)
+			getHome().addDimensionLine(dimensionC1);
+		if (C2 > 0)
+			getHome().addDimensionLine(dimensionC2);
 		
 		getHome().addLabel(titleLabel);
 		getHome().addLabel(footnoteLabel);
 		getHome().addLabel(floatingtextLabel);
+	}
+	
+	private boolean contains(List<Result> elements, Integer[] element)
+	{
+		for (Result items : elements) {
+			if (Arrays.deepEquals(items.getResult(), element))
+				return true;
+		}
+		return false;
+	}
+	
+	class Result{
+		float longs[] = {90, 120, 150, 180};
+		Integer[] result;
+		float sum;
+		float space;
+		
+		public Result(Integer[] result, float sum, float space) {
+			this.result = result;
+			this.sum = sum;
+			this.space = space;
+		}
+		
+		public Integer[] getResult() {
+			return result;
+		}
+		
+		public List<Float> getLongSides()
+		{
+			List<Float> longSides = new ArrayList<Float>();
+			for (Integer idx : result) {
+				longSides.add(longs[idx]);
+			}
+			return longSides;
+		}
+		
+		public float getSpace() {
+			return space;
+		}
+		
+		public float getSum() {
+			return sum;
+		}
+		
+		public float getDiff()
+		{
+			return result[0] - result[result.length - 1];
+		}
+		
+		@Override
+		public String toString() {
+			String result = "";
+			for (Integer integer : this.result) {
+				result += integer + " ";
+			}
+			return result + sum + " " + space;
+		}
+	}
+	
+	private List<Result> filtered(List<Result> results, float space)
+	{
+		List<Result> toReturn = new ArrayList<Result>();
+		for (Result result : results) {
+			if (result.getSpace() <= space)
+				toReturn.add(result);
+		}
+		return toReturn;
+	}
+	
+	private Result best(List<Result> results)
+	{
+		Result best = results.get(0);
+		float minDiff = best.getDiff();
+		for (Result result : results) {
+			float diff = result.getDiff();
+			if (diff <= minDiff)
+			{
+				minDiff = diff;
+				best = result;
+			}
+		}
+		return best;
+	}
+	
+	private List<Result> calculateSolutions(float limit)
+	{
+		float longs[] = {90, 120, 150, 180};
+		float space = limit;
+		List<Result> results = new ArrayList<Result>();
+		for(int i = 0; i < longs.length; i++)
+		{
+			for(int j = 0; j < longs.length; j++)
+			{
+				for(int k = 0; k < longs.length; k++)
+				{
+					for(int l = 0; l < longs.length; l++)
+					{
+						float sum = longs[i] + longs[j] + longs[k] + longs[l];
+						if (sum > limit)
+							break;
+						if (limit - sum <= space)
+						{
+							space = limit - sum;
+							Integer[] result = {i, j, k, l};
+							Arrays.sort(result, Collections.reverseOrder());
+							if (!contains(results, result)) {
+								results.add(new Result(result, sum, space));
+							}
+						}
+						
+					}
+					float sum = longs[i] + longs[j] + longs[k];
+					if (sum > limit)
+						break;
+					if (limit - sum <= space)
+					{
+						space = limit - sum;
+						Integer[] result = {i, j, k};
+						Arrays.sort(result, Collections.reverseOrder());
+						if (!contains(results, result)) {
+							results.add(new Result(result, sum, space));
+						}
+					}
+				}
+				float sum = longs[i] + longs[j];
+				if (sum > limit)
+					break;
+				if (limit - sum <= space)
+				{
+					space = limit - sum;
+					Integer[] result = {i, j};
+					Arrays.sort(result, Collections.reverseOrder());
+					if (!contains(results, result)) {
+						results.add(new Result(result, sum, space));
+					}
+				}
+			}
+			float sum = longs[i];
+			if (sum > limit)
+				break;
+			if (limit - sum <= space)
+			{
+				space = limit - sum;
+				Integer[] result = {i};
+				Arrays.sort(result, Collections.reverseOrder());
+				if (!contains(results, result)) {
+					results.add(new Result(result, sum, space));
+				}
+			}
+		}
+		List<Result> filtered = filtered(results, space);
+		System.out.println("Optimal:");
+		for (Result result : filtered) {
+			//System.out.println(result.toString());
+			for (Integer idx : result.getResult()) {
+				System.out.print(longs[idx] + " ");
+			}
+			System.out.println();
+		}
+		Result best = best(filtered);
+		System.out.println("Best result is: " + best(filtered));
+		for (Integer idx : best.getResult()) {
+			System.out.print(longs[idx] + " ");
+		}
+		System.out.println();
+		return filtered;
+	}
+	
+	private void drawBox(float X, float Y, float width, float depth)
+	{
+		PieceOfFurniture pof = getUserPreferences().getFurnitureCatalog().getCategory(6).getPieceOfFurniture(0);
+		HomePieceOfFurniture box = new HomePieceOfFurniture(pof);
+		box.setHeight(HEIGHT);
+		getHome().addPieceOfFurniture(box);
+		box.setX(X);
+		box.setY(Y);
+		box.setWidth(width);
+		box.setDepth(depth);
+	}
+	
+	private float calculateShortSide(float C)
+	{
+		if (C >= 30 && C < 45)
+			return 30f;
+		else if (C >= 45 && C < 60)
+			return 45f;
+		else if(C >= 60)
+			return 60f;
+		else
+		{
+			JOptionPane.showMessageDialog(null, "Cannot draw boxes with C = " + C + System.lineSeparator() + "Please enter values greater than 30 for C1 or C2", 
+					"C1 and C2 less than 30 error", JOptionPane.ERROR_MESSAGE);
+			System.out.println("Cannot draw boxes with C = " + C + System.lineSeparator() + "Please enter values greater than 30 for C1 or C2");
+			return 0f;
+		}
+	}
+	
+	private void drawRacksB(float C1, float C2, Result result, float A)
+	{
+		float shortSide;
+		float X;
+		if (C1 >= C2) {
+			shortSide = calculateShortSide(C1);
+			X = shortSide / 2;
+		}
+		else {
+			shortSide = calculateShortSide(C2);
+			X = A - shortSide / 2;
+		}
+		List<Float> longSides = result.getLongSides();
+		// Initialize the Y position for first box
+		float Y = longSides.get(0) / 2;
+		for (int i = 0; i < longSides.size(); i++) {
+			float longSide = longSides.get(i);
+			if (i > 0)
+				Y += longSides.get(i-1) / 2 + longSide / 2;
+			drawBox(X, Y, shortSide, longSide);
+		}
+	}
+	
+	private void drawRacksA(float C1, float C2, Result result, float A)
+	{
+		List<Float> longSides = result.getLongSides();
+		float shortSide;
+		float X;
+		if (C1 >= C2) {
+			shortSide = calculateShortSide(C1);
+			X = longSides.get(0) / 2 + shortSide;
+		}
+		else {
+			shortSide = calculateShortSide(C2);
+			X = A - (shortSide + longSides.get(0) / 2);
+		}
+		float Y = shortSide / 2;
+
+		for (int i = 0; i < longSides.size(); i++) {
+			float longSide = longSides.get(i);
+			if (i > 0)
+				if (C1 > C2) {
+					X += longSides.get(i-1) / 2 + longSide / 2;
+				} else {
+					X -= longSides.get(i-1) / 2 + longSide / 2;
+				}
+			drawBox(X, Y, longSide, shortSide);
+		}
+	}
+	
+	protected void drawRacks(float A, float B, float C1, float C2, String unit) {
+		// normalize all values to centimeters
+		A = normalize(A, unit);
+		B = normalize(B, unit);
+		C1 = normalize(C1, unit);
+		C2 = normalize(C2, unit);
+		
+		float shortSide;
+		if (C1 >= C2) {
+			shortSide = calculateShortSide(C1);
+		}
+		else {
+			shortSide = calculateShortSide(C2);
+		}
+		
+		Result bestA = best(calculateSolutions(A - shortSide));
+		Result bestB = best(calculateSolutions(B));
+		
+		drawRacksB(C1, C2, bestB, A);
+		drawRacksA(C1, C2, bestA, A);
 	}
 	
 	protected void showWindowDialog() {
@@ -148,6 +423,7 @@ public class WallsPlugin extends Plugin {
 		JLabel labelC1 = new JLabel("C1");
 		labelC1.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
 		JTextField textFieldC1 = new JTextField(TEXT_FIELD_SIZE);
+		textFieldC1.setText(String.valueOf(0));
 		JPanel panelC1 = new JPanel();
 		panelC1.setLayout(new BorderLayout());
 		panelC1.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
@@ -158,6 +434,7 @@ public class WallsPlugin extends Plugin {
 		JLabel labelC2 = new JLabel("C2");
 		labelC2.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
 		JTextField textFieldC2 = new JTextField(TEXT_FIELD_SIZE);
+		textFieldC2.setText(String.valueOf(0));
 		JPanel panelC2 = new JPanel();
 		panelC2.setLayout(new BorderLayout());
 		panelC2.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
@@ -177,24 +454,26 @@ public class WallsPlugin extends Plugin {
 		
 		JLabel labelFootnote = new JLabel("Footnote");
 		labelFootnote.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
-		JTextField textFieldFootnote = new JTextField(TEXT_FIELD_SIZE);
+		JTextArea footnoteArea = new JTextArea(2, TEXT_FIELD_SIZE);
+		footnoteArea.setFont(UIManager.getFont("TextField.font"));
+		footnoteArea.setText("Not drawn to Scale" + System.lineSeparator() + "Measurements made by customer");
+		JScrollPane footnoteSp = new JScrollPane(footnoteArea);
 		JPanel footnotePnl = new JPanel();
 		footnotePnl.setLayout(new BorderLayout());
 		footnotePnl.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
 		footnotePnl.add(labelFootnote, BorderLayout.LINE_START);
-		footnotePnl.add(textFieldFootnote, BorderLayout.LINE_END);
+		footnotePnl.add(footnoteSp, BorderLayout.LINE_END);
 		fieldsPnl.add(footnotePnl);
 		
 		JLabel labelFloatingtext = new JLabel("Floating text");
 		labelFloatingtext.setBorder(BorderFactory.createEmptyBorder(0,0,0,5));
-		JTextArea floatingTextArea = new JTextArea(2, TEXT_FIELD_SIZE);
-		floatingTextArea.setFont(UIManager.getFont("TextField.font"));
-		JScrollPane scrollPane = new JScrollPane(floatingTextArea);
+		JTextField floatingTf = new JTextField(TEXT_FIELD_SIZE);
+		floatingTf.setText("©StoreroomRackSG.com");
 		JPanel floatingTextPnl = new JPanel();
 		floatingTextPnl.setLayout(new BorderLayout());
 		floatingTextPnl.setBorder(BorderFactory.createEmptyBorder(0,0,5,0));
 		floatingTextPnl.add(labelFloatingtext, BorderLayout.LINE_START);
-		floatingTextPnl.add(scrollPane, BorderLayout.LINE_END);
+		floatingTextPnl.add(floatingTf, BorderLayout.LINE_END);
 		fieldsPnl.add(floatingTextPnl);
 		
 		JPanel unitsPnl = new JPanel();
@@ -228,18 +507,19 @@ public class WallsPlugin extends Plugin {
 				try {
 					float A = Float.parseFloat(textFieldA.getText());
 					float B = Float.parseFloat(textFieldB.getText());
-					float C1 = Float.parseFloat(textFieldC1.getText());
-					float C2 = Float.parseFloat(textFieldC2.getText());
+					float C1 = (textFieldC1.getText().isEmpty() ? 0f : Float.parseFloat(textFieldC1.getText()));
+					float C2 = (textFieldC2.getText().isEmpty() ? 0f : Float.parseFloat(textFieldC2.getText()));
 					String title = textFieldTitle.getText();
-					String footnote = textFieldFootnote.getText();
-					String floatingtext = floatingTextArea.getText();
+					String footnote = footnoteArea.getText();
+					String floatingtext = floatingTf.getText();
 					String option = group.getSelection().getActionCommand();
-					float floatingTextLines = floatingTextArea.getLineCount();
-					drawRoom(A, B, C1, C2, option, title, footnote, floatingtext, floatingTextLines);
+					float footnoteTextLines = footnoteArea.getLineCount();
+					drawRoom(A, B, C1, C2, option, title, footnote, floatingtext, footnoteTextLines);
+					drawRacks(A, B, C1, C2, option);
 					dialog.dispose();
 				} catch (NumberFormatException ex) {
-					JOptionPane.showMessageDialog(null, ex.getMessage(), 
-							"Please insert only numbers", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Fields A and B require numbers."+ System.lineSeparator() + ex.getMessage(), 
+							"Numbers error", JOptionPane.ERROR_MESSAGE);
 				}
 				
 			}
