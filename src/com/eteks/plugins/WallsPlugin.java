@@ -313,7 +313,7 @@ public class WallsPlugin extends Plugin {
 		}
 	}
 	
-	private void drawRacksB(float C1, float C2, Result result, float A)
+	private void drawRacksB(float C1, float C2, Combination combination, float A)
 	{
 		float shortSide;
 		float X;
@@ -325,7 +325,7 @@ public class WallsPlugin extends Plugin {
 			shortSide = calculateShortSide(C2);
 			X = A - shortSide / 2;
 		}
-		List<Float> longSides = result.getLongSides();
+		List<Float> longSides = combination.getCombination();
 		// Initialize the Y position for first box
 		float Y = longSides.get(0) / 2;
 		for (int i = 0; i < longSides.size(); i++) {
@@ -336,9 +336,9 @@ public class WallsPlugin extends Plugin {
 		}
 	}
 	
-	private void drawRacksA(float C1, float C2, Result result, float A)
+	private void drawRacksA(float C1, float C2, Combination combination, float A)
 	{
-		List<Float> longSides = result.getLongSides();
+		List<Float> longSides = combination.getCombination();
 		float shortSide;
 		float X;
 		if (C1 >= C2) {
@@ -363,6 +363,59 @@ public class WallsPlugin extends Plugin {
 		}
 	}
 	
+	private ArrayList<Combination> combinations(List<Float> longSides, float target)
+	{
+		// lower the target until we get value divisible with 30
+        while(target % 30 > 0) {
+        	target--;
+        	System.out.println("target=" + target);
+        }
+        Combinations combinations = new Combinations();
+        combinations.sum_up(longSides,target);
+        return combinations.getCombinations();
+	}
+	
+	private int minSize(ArrayList<Combination> combinations)
+	{
+		int min = combinations.get(0).getCombination().size();
+		for (Combination combination : combinations) {
+			if (combination.getCombination().size() < min)
+				min = combination.getCombination().size();
+		}
+		return min;
+	}
+	
+	private float minDiff(ArrayList<Combination> combinations)
+	{
+		float min = combinations.get(0).getDiff();
+		for (Combination combination : combinations) {
+			if (combination.getDiff() < min)
+				min = combination.getDiff();
+		}
+		return min;
+	}
+	
+	private Combination bestCombination(ArrayList<Combination> combinations)
+	{
+		int minSize = minSize(combinations);
+		combinations.removeIf(combination -> combination.getCombination().size() > minSize);
+		float minDiff = minDiff(combinations);
+		System.out.println("minDiff=" + minDiff + " minSize=" + minSize);
+		combinations.removeIf(combination -> combination.getDiff() > minDiff);
+		if (combinations.isEmpty())
+			return null;
+		else if (combinations.size() > 1)
+		{
+			System.out.println("There are more than one best combinations: ");
+			for (Combination combination : combinations) {
+				System.out.println(combination.toString());
+			}
+			return null;
+		}
+		else
+			return combinations.get(0);
+	}
+	
 	protected void drawRacks(float A, float B, float C1, float C2, String unit) {
 		// normalize all values to centimeters
 		A = normalize(A, unit);
@@ -370,19 +423,31 @@ public class WallsPlugin extends Plugin {
 		C1 = normalize(C1, unit);
 		C2 = normalize(C2, unit);
 		
-		float shortSide;
-		if (C1 >= C2) {
-			shortSide = calculateShortSide(C1);
-		}
-		else {
-			shortSide = calculateShortSide(C2);
+		float shortSide = (C1 >= C2) ? calculateShortSide(C1) : calculateShortSide(C2);
+
+		Float[] numbers = {90f, 120f, 150f, 180f};
+		ArrayList<Float> longSides = new ArrayList<Float>(Arrays.asList(numbers));
+		// not using 30x180 racks
+		if (shortSide == 30f) {
+			longSides.remove(longSides.size()-1);
 		}
 		
-		Result bestA = best(calculateSolutions(A - shortSide));
-		Result bestB = best(calculateSolutions(B));
+		Combination bestA = bestCombination(combinations(longSides, A - shortSide));
+		Combination bestB = bestCombination(combinations(longSides, B));
 		
-		drawRacksB(C1, C2, bestB, A);
-		drawRacksA(C1, C2, bestA, A);
+		if (bestA != null)
+		{
+			System.out.println("Best combination for A");
+			System.out.println(bestA.toString());
+			drawRacksA(C1, C2, bestA, A);
+		}
+		if (bestB != null)
+		{
+			System.out.println("Best combination for B");
+			System.out.println(bestB.toString());
+			drawRacksB(C1, C2, bestB, A);
+		}
+
 	}
 	
 	protected void showWindowDialog() {
