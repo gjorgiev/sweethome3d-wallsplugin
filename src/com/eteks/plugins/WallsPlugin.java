@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -30,7 +29,6 @@ import com.eteks.sweethome3d.model.TextStyle;
 import com.eteks.sweethome3d.model.Wall;
 import com.eteks.sweethome3d.plugin.Plugin;
 import com.eteks.sweethome3d.plugin.PluginAction;
-import com.sun.org.apache.xml.internal.serialize.LineSeparator;
 
 
 public class WallsPlugin extends Plugin {
@@ -67,12 +65,6 @@ public class WallsPlugin extends Plugin {
 		Wall wallC1 = new Wall(0,B,C1,B,THICKNESS,HEIGHT);
 		Wall wallC2 = new Wall(A-C2,B,A,B,THICKNESS,HEIGHT);
 		
-		/*
-		Baseboard basebordA = new Baseboard(100, 100, 1, null);
-		wallA.setRightSideBaseboard(basebordA);
-		wallA.setRightSideBaseboard(basebordA);
-		wallA.setLeftSideBaseboard(basebordA);
-		*/
 		
 		final float dimensionOffset = DIMENSION_DISTANCE_CONST*A*0.05f;
 		DimensionLine dimensionA = new DimensionLine(0,0,A,0,-dimensionOffset);
@@ -117,172 +109,7 @@ public class WallsPlugin extends Plugin {
 		getHome().addLabel(footnoteLabel);
 		getHome().addLabel(floatingtextLabel);
 	}
-	
-	private boolean contains(List<Result> elements, Integer[] element)
-	{
-		for (Result items : elements) {
-			if (Arrays.deepEquals(items.getResult(), element))
-				return true;
-		}
-		return false;
-	}
-	
-	class Result{
-		float longs[] = {90, 120, 150, 180};
-		Integer[] result;
-		float sum;
-		float space;
-		
-		public Result(Integer[] result, float sum, float space) {
-			this.result = result;
-			this.sum = sum;
-			this.space = space;
-		}
-		
-		public Integer[] getResult() {
-			return result;
-		}
-		
-		public List<Float> getLongSides()
-		{
-			List<Float> longSides = new ArrayList<Float>();
-			for (Integer idx : result) {
-				longSides.add(longs[idx]);
-			}
-			return longSides;
-		}
-		
-		public float getSpace() {
-			return space;
-		}
-		
-		public float getSum() {
-			return sum;
-		}
-		
-		public float getDiff()
-		{
-			return result[0] - result[result.length - 1];
-		}
-		
-		@Override
-		public String toString() {
-			String result = "";
-			for (Integer integer : this.result) {
-				result += integer + " ";
-			}
-			return result + sum + " " + space;
-		}
-	}
-	
-	private List<Result> filtered(List<Result> results, float space)
-	{
-		List<Result> toReturn = new ArrayList<Result>();
-		for (Result result : results) {
-			if (result.getSpace() <= space)
-				toReturn.add(result);
-		}
-		return toReturn;
-	}
-	
-	private Result best(List<Result> results)
-	{
-		Result best = results.get(0);
-		float minDiff = best.getDiff();
-		for (Result result : results) {
-			float diff = result.getDiff();
-			if (diff <= minDiff)
-			{
-				minDiff = diff;
-				best = result;
-			}
-		}
-		return best;
-	}
-	
-	private List<Result> calculateSolutions(float limit)
-	{
-		float longs[] = {90, 120, 150, 180};
-		float space = limit;
-		List<Result> results = new ArrayList<Result>();
-		for(int i = 0; i < longs.length; i++)
-		{
-			for(int j = 0; j < longs.length; j++)
-			{
-				for(int k = 0; k < longs.length; k++)
-				{
-					for(int l = 0; l < longs.length; l++)
-					{
-						float sum = longs[i] + longs[j] + longs[k] + longs[l];
-						if (sum > limit)
-							break;
-						if (limit - sum <= space)
-						{
-							space = limit - sum;
-							Integer[] result = {i, j, k, l};
-							Arrays.sort(result, Collections.reverseOrder());
-							if (!contains(results, result)) {
-								results.add(new Result(result, sum, space));
-							}
-						}
-						
-					}
-					float sum = longs[i] + longs[j] + longs[k];
-					if (sum > limit)
-						break;
-					if (limit - sum <= space)
-					{
-						space = limit - sum;
-						Integer[] result = {i, j, k};
-						Arrays.sort(result, Collections.reverseOrder());
-						if (!contains(results, result)) {
-							results.add(new Result(result, sum, space));
-						}
-					}
-				}
-				float sum = longs[i] + longs[j];
-				if (sum > limit)
-					break;
-				if (limit - sum <= space)
-				{
-					space = limit - sum;
-					Integer[] result = {i, j};
-					Arrays.sort(result, Collections.reverseOrder());
-					if (!contains(results, result)) {
-						results.add(new Result(result, sum, space));
-					}
-				}
-			}
-			float sum = longs[i];
-			if (sum > limit)
-				break;
-			if (limit - sum <= space)
-			{
-				space = limit - sum;
-				Integer[] result = {i};
-				Arrays.sort(result, Collections.reverseOrder());
-				if (!contains(results, result)) {
-					results.add(new Result(result, sum, space));
-				}
-			}
-		}
-		List<Result> filtered = filtered(results, space);
-		System.out.println("Optimal:");
-		for (Result result : filtered) {
-			//System.out.println(result.toString());
-			for (Integer idx : result.getResult()) {
-				System.out.print(longs[idx] + " ");
-			}
-			System.out.println();
-		}
-		Result best = best(filtered);
-		System.out.println("Best result is: " + best(filtered));
-		for (Integer idx : best.getResult()) {
-			System.out.print(longs[idx] + " ");
-		}
-		System.out.println();
-		return filtered;
-	}
+
 	
 	private void drawBox(float X, float Y, float width, float depth)
 	{
@@ -306,8 +133,6 @@ public class WallsPlugin extends Plugin {
 			return 60f;
 		else
 		{
-			JOptionPane.showMessageDialog(null, "Cannot draw boxes with C = " + C + System.lineSeparator() + "Please enter values greater than 30 for C1 or C2", 
-					"C1 and C2 less than 30 error", JOptionPane.ERROR_MESSAGE);
 			System.out.println("Cannot draw boxes with C = " + C + System.lineSeparator() + "Please enter values greater than 30 for C1 or C2");
 			return 0f;
 		}
@@ -354,7 +179,7 @@ public class WallsPlugin extends Plugin {
 		for (int i = 0; i < longSides.size(); i++) {
 			float longSide = longSides.get(i);
 			if (i > 0)
-				if (C1 > C2) {
+				if (C1 >= C2) {
 					X += longSides.get(i-1) / 2 + longSide / 2;
 				} else {
 					X -= longSides.get(i-1) / 2 + longSide / 2;
@@ -416,6 +241,33 @@ public class WallsPlugin extends Plugin {
 			return combinations.get(0);
 	}
 	
+	private void addDimensionLinesRacks(float C1, float C2, Combination bestA, Combination bestB, float A, float B, float shortSide)
+	{
+		// Double the offset of other dimension lines to make space for the new
+		List<DimensionLine> dimension_lines = new ArrayList<DimensionLine>(getHome().getDimensionLines());
+		DimensionLine dimensionA = dimension_lines.get(0);
+		DimensionLine dimensionB = (C1 >= C2) ? dimension_lines.get(1) : dimension_lines.get(2);
+		dimensionA.setOffset(dimensionA.getOffset() * 2);
+		dimensionB.setOffset(dimensionB.getOffset() * 2);
+		// add dimensions for best combination A
+		DimensionLine dimensionBestA, dimensionBestB, dimensionSpaceA, dimensionSpaceB;
+		if(C1 >= C2) {
+			dimensionBestA = new DimensionLine(0, 0, bestA.sum + shortSide, 0, dimensionA.getOffset()/2);
+			dimensionBestB = new DimensionLine(0, 0, 0, bestB.sum, dimensionB.getOffset()/2);
+			dimensionSpaceA = new DimensionLine(bestA.sum + shortSide, 0, A, 0, dimensionA.getOffset()/2);
+			dimensionSpaceB = new DimensionLine(0, bestB.sum, 0, B, dimensionB.getOffset()/2);
+		} else {
+			dimensionBestA = new DimensionLine(A - (bestA.sum + shortSide), 0, A, 0, dimensionA.getOffset()/2);
+			dimensionBestB = new DimensionLine(A, 0, A, bestB.sum, dimensionB.getOffset()/2);
+			dimensionSpaceA = new DimensionLine(0, 0, A - (bestA.sum + shortSide), 0, dimensionA.getOffset()/2);
+			dimensionSpaceB = new DimensionLine(A, bestB.sum, A, B, dimensionB.getOffset()/2);
+		}
+		getHome().addDimensionLine(dimensionBestA);
+		getHome().addDimensionLine(dimensionBestB);
+		getHome().addDimensionLine(dimensionSpaceA);
+		getHome().addDimensionLine(dimensionSpaceB);
+	}
+	
 	protected void drawRacks(float A, float B, float C1, float C2, String unit) {
 		// normalize all values to centimeters
 		A = normalize(A, unit);
@@ -435,19 +287,21 @@ public class WallsPlugin extends Plugin {
 		Combination bestA = bestCombination(combinations(longSides, A - shortSide));
 		Combination bestB = bestCombination(combinations(longSides, B));
 		
-		if (bestA != null)
-		{
-			System.out.println("Best combination for A");
-			System.out.println(bestA.toString());
-			drawRacksA(C1, C2, bestA, A);
-		}
 		if (bestB != null)
 		{
 			System.out.println("Best combination for B");
 			System.out.println(bestB.toString());
 			drawRacksB(C1, C2, bestB, A);
 		}
-
+		if (bestA != null)
+		{
+			System.out.println("Best combination for A");
+			System.out.println(bestA.toString());
+			drawRacksA(C1, C2, bestA, A);
+		}
+		
+		addDimensionLinesRacks(C1, C2, bestA, bestB, A, B, shortSide);
+		
 	}
 	
 	protected void showWindowDialog() {
@@ -580,7 +434,12 @@ public class WallsPlugin extends Plugin {
 					String option = group.getSelection().getActionCommand();
 					float footnoteTextLines = footnoteArea.getLineCount();
 					drawRoom(A, B, C1, C2, option, title, footnote, floatingtext, footnoteTextLines);
-					drawRacks(A, B, C1, C2, option);
+					if (C1 < 30 && C2 < 30) {
+						JOptionPane.showMessageDialog(null, "Cannot draw boxes with C1 = "+ C1 + " and C2 = " + C2 + System.lineSeparator() + "Please enter values greater than 30 for C1 or C2", 
+								"C1 and C2 less than 30", JOptionPane.INFORMATION_MESSAGE);
+					} else {
+						drawRacks(A, B, C1, C2, option);
+					}
 					dialog.dispose();
 				} catch (NumberFormatException ex) {
 					JOptionPane.showMessageDialog(null, "Fields A and B require numbers."+ System.lineSeparator() + ex.getMessage(), 
